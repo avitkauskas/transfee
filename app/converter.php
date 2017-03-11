@@ -2,34 +2,65 @@
 
 namespace App;
 
+use Exception;
+
+/**
+ * Currency converter
+ */
 class Converter
 {
+    /**
+     * @var array Preset exchange rates
+     */
     protected static $rates = [
         'EUR' => 1,
         'USD' => 1.1497,
         'JPY' => 129.53,
     ];
 
+    /**
+     * @var array The lowest currency denominations
+     */
     protected static $denominations = [
-        'EUR' => 0.01,
-        'USD' => 0.01,
+        'default' => 0.01,
         'JPY' => 1,
     ];
 
+    /**
+     * Converts amounts from one currenct=y to another
+     *
+     * @param float  $amount        Amount in convert from currency
+     * @param string $from_currency Currency to convert from
+     * @param string $to_currency   Currency to convert to
+     *
+     * @throws Exception if gets unsupported currency
+     *
+     * @return float Amount in convert to currency
+     */
     public static function convert($amount, $from_currency, $to_currency)
     {
         if (! isset(static::$rates[$from_currency])) {
-            die("Unsupported currency: " . $from_currency . "\n");
+            throw new Exception("Unsupported currency '$from_currency'");
         }
         if (! isset(static::$rates[$to_currency])) {
-            die("Unsupported currency: " . $to_currency . "\n");
+            throw new Exception("Unsupported currency '$to_currency'");
         }
 
         return $amount / static::$rates[$from_currency] * static::$rates[$to_currency];
     }
 
+    /**
+     * Provides the lowest denominations of currencies
+     *
+     * @param string $currency Currency code
+     *
+     * @return float Lowest denomination for this currency
+     */
     public static function getDenomination($currency)
     {
-        return static::$denominations[$currency];
+        if (isset(static::$denominations[$currency])) {
+            return static::$denominations[$currency];
+        }
+        return static::$denominations['default'];
     }
 }

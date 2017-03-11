@@ -5,8 +5,15 @@ namespace App;
 use App\Aggregator;
 use App\Converter;
 
+/**
+ * Instantiates transactions and provides methods
+ * for transaction fee calculation and output
+ */
 class Transaction
 {
+    /**
+     * @var mixed Properties of the transaction
+     */
     protected $date;
     protected $user_id;
     protected $user_type;
@@ -14,6 +21,10 @@ class Transaction
     protected $amount;
     protected $currency;
 
+
+    /**
+     * @var array Fee rules configuration
+     */
     protected static $fee_rules = [
         'natural' => [
             'cash_in' => [
@@ -49,6 +60,12 @@ class Transaction
         ],
     ];
 
+
+    /**
+     * Transaction constructor - initializes properties
+     *
+     * @param array $row Transaction properties as parsed from CVS file
+     */
     public function __construct(array $row)
     {
         $this->date      = $row[0];
@@ -59,6 +76,16 @@ class Transaction
         $this->currency  = $row[5];
     }
 
+
+    /**
+     * This is a generator function.
+     * Reads transactions from CVS file, registers them to aggregator
+     * and yields transactions one by one for processing
+     *
+     * @param string $file File name to read from
+     *
+     * @return Transaction iterable collection
+     */
     public static function readByOneFromCSV($file)
     {
         $f = fopen($file, 'r');
@@ -74,6 +101,12 @@ class Transaction
         }
     }
 
+
+    /**
+     * Calculates the fee of the transaction according to the rules
+     *
+     * @return float Fee in transaction currency
+     */
     public function getFee()
     {
         $count_this_week  = Aggregator::getCount($this->user_id, $this->operation);
@@ -100,31 +133,50 @@ class Transaction
             }
         }
 
+        # Preliminar fee in EUR
         $fee = $fee_amount * $fee_rate / 100;
 
+        # Adjust for minimum fee, if applicable
         if (isset(static::$fee_rules[$this->user_type][$this->operation]['min_fee']))
         {
             $fee = max($fee, static::$fee_rules[$this->user_type][$this->operation]['min_fee']);
         }
 
+        # Adjust for maximum fee, if applicable
         if (isset(static::$fee_rules[$this->user_type][$this->operation]['max_fee']))
         {
             $fee = min($fee, static::$fee_rules[$this->user_type][$this->operation]['max_fee']);
         }
 
+        # Converto to transaction's currency
         $fee = Converter::convert($fee, 'EUR', $this->currency);
 
+        # Hack for calculations and conversion rounding error
+        # 3.00000000001 would round up (ceil) to 3.01 without that
+        $fee -= 0.000001;
+
+        # Round up to the lowest currency denomination
         $denomination = Converter::getDenomination($this->currency);
         $fee = ceil($fee / $denomination) * $denomination;
 
         return $fee;
     }
 
+
+    /**
+     * Prints the transaction fee to stdout
+     * with the correct decimal points formating
+     */
     public function printFee()
     {
         $decimals = log10(1 / Converter::getDenomination($this->currency));
-        echo number_format($this->getFee(), $decimals) . "\n";
+        echo number_format($this->getFee(), $decimals, '.', '') . "\n";
     }
+
+
+    /**
+     * Getters for the properties
+     */
 
     public function getDate()
     {
