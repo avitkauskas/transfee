@@ -102,16 +102,14 @@ class Transaction
 
         $fee = $fee_amount * $fee_rate / 100;
 
-        if ( isset(static::$fee_rules[$this->user_type][$this->operation]['min_fee']) &&
-             $fee < static::$fee_rules[$this->user_type][$this->operation]['min_fee']
-        ) {
-            $fee = static::$fee_rules[$this->user_type][$this->operation]['min_fee'];
+        if (isset(static::$fee_rules[$this->user_type][$this->operation]['min_fee']))
+        {
+            $fee = max($fee, static::$fee_rules[$this->user_type][$this->operation]['min_fee']);
         }
 
-        if ( isset(static::$fee_rules[$this->user_type][$this->operation]['max_fee']) &&
-             $fee > static::$fee_rules[$this->user_type][$this->operation]['max_fee']
-        ) {
-            $fee = static::$fee_rules[$this->user_type][$this->operation]['max_fee'];
+        if (isset(static::$fee_rules[$this->user_type][$this->operation]['max_fee']))
+        {
+            $fee = min($fee, static::$fee_rules[$this->user_type][$this->operation]['max_fee']);
         }
 
         $fee = Converter::convert($fee, 'EUR', $this->currency);
@@ -124,7 +122,8 @@ class Transaction
 
     public function printFee()
     {
-        echo $this->getFee() . "\n";
+        $decimals = log10(1 / Converter::getDenomination($this->currency));
+        echo number_format($this->getFee(), $decimals) . "\n";
     }
 
     public function getDate()
