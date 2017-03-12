@@ -27,7 +27,7 @@ class Converter
     ];
 
     /**
-     * Converts amounts from one currenct=y to another
+     * Converts amounts from one currency to another
      *
      * @param float  $amount        Amount in convert from currency
      * @param string $from_currency Currency to convert from

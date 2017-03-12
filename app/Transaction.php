@@ -80,7 +80,7 @@ class Transaction
     /**
      * This is a generator function.
      * Reads transactions from CVS file, registers them to aggregator
-     * and yields transactions one by one for processing
+     * and yields transactions one by one for processing.
      *
      * @param string $file File name to read from
      *
@@ -133,7 +133,7 @@ class Transaction
             }
         }
 
-        # Preliminar fee in EUR
+        # Preliminary fee in EUR
         $fee = $fee_amount * $fee_rate / 100;
 
         # Adjust for minimum fee, if applicable
