@@ -90,6 +90,22 @@ class TransactionTest extends TestCase
         $this->assertEquals(1000 * 0.3 / 100, $transaction->getFee());
     }
 
+    public function testForSameWeekInDifferentYears()
+    {
+        $transaction = new Transaction(['2010-01-03',1,'natural','cash_out',900.00,'EUR']);
+        Aggregator::register($transaction);
+        $this->assertEquals(0, $transaction->getFee());
+        $transaction = new Transaction(['2011-01-03',1,'natural','cash_out',900.00,'EUR']);
+        Aggregator::register($transaction);
+        $this->assertEquals(0, $transaction->getFee());
+        $transaction = new Transaction(['2012-01-03',1,'natural','cash_out',900.00,'EUR']);
+        Aggregator::register($transaction);
+        $this->assertEquals(0, $transaction->getFee());
+        $transaction = new Transaction(['2013-01-03',1,'natural','cash_out',900.00,'EUR']);
+        Aggregator::register($transaction);
+        $this->assertEquals(0, $transaction->getFee());
+    }
+
     public function testFeeCalculationAndRounding()
     {
         # test calculation and rounding for other currencies, ex. JPY

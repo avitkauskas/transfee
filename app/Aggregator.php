@@ -34,7 +34,7 @@ class Aggregator
      */
     public static function register(Transaction $transaction)
     {
-        $transaction_week = date("W", strtotime($transaction->getDate()));
+        $transaction_week = date("Y-W", strtotime($transaction->getDate()));
         if (static::$current_week != $transaction_week) {
             static::$current_week = $transaction_week;
             static::$weekly_stats = [];
